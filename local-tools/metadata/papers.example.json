@@ -1,0 +1,16 @@
+[
+  {
+    "paper_key": "author_year_short_slug",
+    "title": "Full Paper Title Here",
+    "authors": "Last, F., & Last, F.",
+    "year": 2024,
+    "journal": "Journal Name",
+    "abstract": "A short description of what this paper is about.",
+    "doi": "10.XXXX/XXXXXXX",
+    "keywords": "keyword1, keyword2, keyword3",
+    "source_url": "https://doi.org/10.XXXX/XXXXXXX",
+    "pdf_url": "https://direct-pdf-link-if-available.pdf",
+    "best_link": "https://doi.org/10.XXXX/XXXXXXX",
+    "local_path": "papers/filename-matching-your-pdf.pdf"
+  }
+]

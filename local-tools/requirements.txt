@@ -1,0 +1,19 @@
+# Python dependencies for local-tools
+# Install with: pip install -r requirements.txt
+# Use a virtual environment: python -m venv .venv && source .venv/bin/activate
+
+# PDF text extraction — page-aware, good for academic PDFs
+pdfplumber>=0.11.0
+
+# Local embedding model — BAAI/bge-base-en-v1.5 (768-dim, matches Cloudflare's hosted version)
+sentence-transformers>=3.0.0
+
+# Supabase Python client
+supabase>=2.7.0
+
+# Environment variable loading from .env.local
+python-dotenv>=1.0.0
+
+# Optional embedding server
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0

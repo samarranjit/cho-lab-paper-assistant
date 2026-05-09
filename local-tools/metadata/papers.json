@@ -1,0 +1,58 @@
+[
+  {
+    "paper_key": "cho_2021_future_snowpack_snowmelt_runoff_potential_extremes",
+    "title": "Future Changes in Snowpack, Snowmelt, and Runoff Potential Extremes Over North America",
+    "authors": "Cho, E., McCrary, R. R., & Jacobs, J. M.",
+    "year": 2021,
+    "journal": "Geophysical Research Letters",
+    "abstract": "This paper examines future changes in extreme snow water equivalent, snowmelt, and runoff potential over North America using NA-CORDEX regional climate model simulations.",
+    "doi": "10.1029/2021GL094985",
+    "keywords": "snowpack, snowmelt, runoff potential, climate change, NA-CORDEX, North America",
+    "source_url": "https://doi.org/10.1029/2021GL094985",
+    "pdf_url": "",
+    "best_link": "https://doi.org/10.1029/2021GL094985",
+    "local_path": "papers/Geophysical Research Letters - 2021 - Cho - Future Changes in Snowpack Snowmelt and Runoff Potential Extremes Over North.pdf"
+  },
+  {
+    "paper_key": "cho_2020_extreme_value_swe_snowmelt_infrastructure_design_conus",
+    "title": "Extreme Value Snow Water Equivalent and Snowmelt for Infrastructure Design Over the Contiguous United States",
+    "authors": "Cho, E., & Jacobs, J. M.",
+    "year": 2020,
+    "journal": "Water Resources Research",
+    "abstract": "This paper develops 25- and 100-year return level design maps of snow water equivalent and snowmelt over the contiguous United States and compares them with NOAA Atlas 14 precipitation-frequency estimates.",
+    "doi": "10.1029/2020WR028126",
+    "keywords": "SWE, snowmelt, infrastructure design, extreme value analysis, NOAA Atlas 14, rain-on-snow",
+    "source_url": "https://doi.org/10.1029/2020WR028126",
+    "pdf_url": "",
+    "best_link": "https://doi.org/10.1029/2020WR028126",
+    "local_path": "papers/Water Resources Research - 2020 - Cho - Extreme Value Snow Water Equivalent and Snowmelt for Infrastructure Design Over the.pdf"
+  },
+  {
+    "paper_key": "johnston_2024_global_snow_seasonality_regimes_satellite_records",
+    "title": "Global Snow Seasonality Regimes from Satellite Records of Snow Cover",
+    "authors": "Johnston, J., Jacobs, J. M., & Cho, E.",
+    "year": 2024,
+    "journal": "Journal of Hydrometeorology",
+    "abstract": "This paper develops globally applicable snow seasonality classes using satellite-based snow cover records, MODIS data, machine learning, and decision tree rules.",
+    "doi": "10.1175/JHM-D-23-0047.1",
+    "keywords": "snow seasonality, MODIS, satellite, machine learning, snow cover, global",
+    "source_url": "https://doi.org/10.1175/JHM-D-23-0047.1",
+    "pdf_url": "",
+    "best_link": "https://doi.org/10.1175/JHM-D-23-0047.1",
+    "local_path": "papers/hydr-JHM-D-23-0047.1.pdf"
+  },
+  {
+    "paper_key": "pflug_2024_spaceborne_swe_observations_vegetated_areas_data_assimilation",
+    "title": "Extending the Utility of Space-Borne Snow Water Equivalent Observations Over Vegetated Areas with Data Assimilation",
+    "authors": "Pflug, J. M., Wrzesien, M. L., Kumar, S. V., Cho, E., Arsenault, K. R., Houser, P. R., & Vuyovich, C. M.",
+    "year": 2024,
+    "journal": "Hydrology and Earth System Sciences",
+    "abstract": "This paper investigates how synthetic space-borne snow water equivalent observations can improve snowpack estimates through data assimilation using an observing system simulation experiment.",
+    "doi": "10.5194/hess-28-631-2024",
+    "keywords": "SWE, SAR, data assimilation, forest canopy, remote sensing, OSSE, Noah-MP",
+    "source_url": "https://doi.org/10.5194/hess-28-631-2024",
+    "pdf_url": "",
+    "best_link": "https://doi.org/10.5194/hess-28-631-2024",
+    "local_path": "papers/hess-28-631-2024.pdf"
+  }
+]
