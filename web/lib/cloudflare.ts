@@ -10,7 +10,8 @@ const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 // Configurable so you can swap models in Vercel env vars without a redeploy.
 const LLM_MODEL =
   process.env.CLOUDFLARE_LLM_MODEL ??
-  "@cf/meta/llama-3.1-8b-instruct-fp8-fast";
+  // "@cf/meta/llama-3.1-8b-instruct-fp8-fast";
+  "@cf/google/gemma-3-12b-it";
 
 function assertEnv() {
   if (!ACCOUNT_ID || !API_TOKEN) {
