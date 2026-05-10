@@ -3,11 +3,13 @@ import { supabase } from "@/lib/supabase";
 import { embedQuery } from "@/lib/embeddings";
 import { generateAnswer } from "@/lib/cloudflare";
 import { buildRagPrompt } from "@/lib/prompts";
-import type { AskResponse, MatchedChunk, Source } from "@/lib/types";
+import { buildRetrievalQuery } from "@/lib/queryContext";
+import type { AskResponse, ChatMessage, MatchedChunk, Source } from "@/lib/types";
 
 const MAX_QUESTION_LENGTH = 1500;
+const MAX_HISTORY_MESSAGES = 6;
+const MAX_HISTORY_MSG_LENGTH = 1500; // per-message safety cap
 
-// Configurable retrieval parameters — tune via Vercel env vars without a redeploy
 const MATCH_COUNT = parseInt(process.env.MATCH_COUNT ?? "6", 10);
 const MATCH_THRESHOLD = parseFloat(process.env.MATCH_THRESHOLD ?? "0.35");
 
@@ -19,8 +21,29 @@ const LLM_FAILURE_ANSWER =
   "I found relevant Cho Lab paper excerpts, but the AI answer service was temporarily unavailable. " +
   "Here are the most relevant sources to review directly.";
 
-// best_link is stored in DB by ingest_local.py — compute it here as fallback
-// for any chunks that pre-date the column addition.
+// Validate and sanitize history from the request body.
+// Rejects malformed entries, trims content, caps per-message length, keeps last N.
+function sanitizeHistory(raw: unknown): ChatMessage[] {
+  if (!Array.isArray(raw)) return [];
+
+  const valid: ChatMessage[] = raw
+    .filter(
+      (m): m is { role: string; content: string } =>
+        m !== null &&
+        typeof m === "object" &&
+        (m.role === "user" || m.role === "assistant") &&
+        typeof m.content === "string"
+    )
+    .map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content.trim().slice(0, MAX_HISTORY_MSG_LENGTH),
+    }))
+    .filter((m) => m.content.length > 0);
+
+  // Keep only the most recent messages to bound token use
+  return valid.slice(-MAX_HISTORY_MESSAGES);
+}
+
 function resolveLink(chunk: MatchedChunk): string {
   if (chunk.best_link) return chunk.best_link;
   if (chunk.source_url?.startsWith("http")) return chunk.source_url;
@@ -33,7 +56,6 @@ function resolveLink(chunk: MatchedChunk): string {
   return "";
 }
 
-// Keep the highest-similarity chunk per paper so source cards don't repeat the same paper.
 function deduplicateByPaper(chunks: MatchedChunk[]): MatchedChunk[] {
   const seen = new Map<string, MatchedChunk>();
   for (const c of chunks) {
@@ -67,9 +89,12 @@ function toSource(chunk: MatchedChunk, num: number): Source {
 export async function POST(req: NextRequest) {
   // ── Parse & validate ───────────────────────────────────────────────────────
   let question: string;
+  let history: ChatMessage[];
+
   try {
     const body = await req.json();
     question = typeof body?.question === "string" ? body.question.trim() : "";
+    history = sanitizeHistory(body?.history);
   } catch {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
@@ -84,10 +109,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Step 1: Embed question ─────────────────────────────────────────────────
+  // ── Step 1: Embed the retrieval query ──────────────────────────────────────
+  // For follow-up questions, we enrich the retrieval query with prior context.
+  // The original question is kept for the LLM answer generation.
+  const retrievalQuery = buildRetrievalQuery(question, history);
+
   let queryEmbedding: number[];
   try {
-    queryEmbedding = await embedQuery(question);
+    queryEmbedding = await embedQuery(retrievalQuery);
   } catch (err) {
     console.error("[ask] Embedding failed:", err instanceof Error ? err.message : err);
     return NextResponse.json(
@@ -133,14 +162,14 @@ export async function POST(req: NextRequest) {
   const sources = unique.map((c, i) => toSource(c, i + 1));
 
   // ── Step 3: Generate answer ────────────────────────────────────────────────
-  const prompt = buildRagPrompt(question, unique);
+  // Pass history for follow-up understanding, but papers remain the only facts.
+  const prompt = buildRagPrompt(question, unique, history);
   let answer: string;
   let usedFallback = false;
 
   try {
     answer = await generateAnswer(prompt);
   } catch (err) {
-    // LLM failed — return sources as graceful fallback instead of an error page
     console.error("[ask] Cloudflare LLM failed:", err instanceof Error ? err.message : err);
     answer = LLM_FAILURE_ANSWER;
     usedFallback = true;

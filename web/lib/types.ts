@@ -38,10 +38,18 @@ export interface MatchedChunk {
   similarity: number;
 }
 
+// ── Conversation memory ───────────────────────────────────────────────────────
+
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 // ── API request / response ────────────────────────────────────────────────────
 
 export interface AskRequest {
   question: string;
+  history?: ChatMessage[];
 }
 
 export interface Source {
