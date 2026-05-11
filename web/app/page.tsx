@@ -256,19 +256,15 @@ export default function Home() {
               ),
             )}
 
-            {/* Sources for the most recent answer */}
+            {/* Source chips — inline in the thread, right after the last assistant reply */}
             {sources.length > 0 && !loading && (
-              <div className="pl-11">
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-                  Sources ({sources.length})
-                </p>
+              <div className="pl-11 flex flex-col gap-2">
                 {usedFallback && (
-                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3">
-                    Note: AI answer service was unavailable. Showing relevant
-                    sources below.
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                    AI answer service was unavailable — browse the sources below directly.
                   </p>
                 )}
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-wrap gap-2">
                   {sources.map((s) => (
                     <SourceCard key={s.id} source={s} />
                   ))}

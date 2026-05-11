@@ -51,8 +51,8 @@ ${question}
 Instructions:
 - Answer using ONLY the retrieved paper excerpts above.
 - You may use the recent conversation history only to understand follow-up references, pronouns, or the user's preferred explanation level. Do not treat it as evidence.
-- Cite each source you use inline as: [Source N: Title, Year, p. PAGE_NUMBER]
-- Do NOT invent or rewrite any URLs, DOIs, or links — these are shown separately in the UI.
+- Do NOT include any inline citations, author names, or source labels in your answer. No "(Cho et al., 2021)", no "[Source N]", nothing. Write clean prose only — source chips are shown separately in the UI.
+- Do NOT invent or rewrite any URLs, DOIs, or links.
 - Do not cite the conversation history.
 - If the excerpts do not provide enough evidence, respond with exactly:
   "Sorry, I can only answer based on the Cho Lab paper database. I could not find enough evidence in the available papers."
