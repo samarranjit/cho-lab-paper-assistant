@@ -6,7 +6,15 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          DEFAULT: "#007C92",
+          light: "#009db8",
+          dark: "#005f70",
+        },
+      },
+    },
   },
   plugins: [require("@tailwindcss/typography")],
 };
