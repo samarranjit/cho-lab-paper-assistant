@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useEffect, useRef, useState } from "react";
 import ChatBox from "@/components/ChatBox";
 import SourceCard from "@/components/SourceCard";
@@ -11,6 +14,24 @@ import {
 } from "@/lib/chatMemory";
 import type { AskResponse, ChatMessage, Source } from "@/lib/types";
 
+const AVATAR = "/images/avatar.png";
+
+const INITIAL_GREETING =
+  "Hi! I'm Minny, the Cho Lab research assistant at Texas State University. " +
+  "I've read all the papers published by the Cho Lab and I'm here to help you explore our research.\n\n" +
+  "Ask me anything about snowpack, snowmelt, runoff, satellite retrievals, or other topics covered in our publications. " +
+  "I'll answer using only what the papers say and always tell you which paper I'm drawing from.\n\n" +
+  "I'm still learning, so I may occasionally make mistakes — please treat my answers as a helpful starting point, not a definitive source.";
+
+const GREETING_RE =
+  /^(hi+|hello+|hey+|howdy|sup|what'?s\s*up|how\s+are\s+(you|u)|good\s+(morning|afternoon|evening)|greetings|yo+|hiya|helo|hii+|heyyy*)[.!?,\s]*$/i;
+
+const GREETING_REPLY =
+  "Hi there! I'm Minny, the Cho Lab research assistant. " +
+  "I can answer questions about research papers published by the Cho Lab at Texas State University — " +
+  "things like snowpack changes, satellite SWE retrievals, snowmelt-driven runoff, and more.\n\n" +
+  "What would you like to know?";
+
 const EXAMPLE_QUESTIONS = [
   "What are the five snow seasonality classes?",
   "What problem does the infrastructure design snowmelt paper try to solve?",
@@ -19,33 +40,66 @@ const EXAMPLE_QUESTIONS = [
   "How do snowmelt and rain-on-snow events affect infrastructure design?",
 ];
 
+type ThinkingStage = "searching" | "generating";
+
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [question, setQuestion] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(false);
+  const [thinkingStage, setThinkingStage] =
+    useState<ThinkingStage>("searching");
   const [error, setError] = useState("");
   const [usedFallback, setUsedFallback] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const thinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load persisted messages on first client-side render.
-  // Done in useEffect so SSR renders an empty list (no hydration mismatch).
   useEffect(() => {
     setMessages(loadChatMemory());
   }, []);
 
-  // Scroll to bottom after each message update
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Advance thinking stage after 2s of loading
+  useEffect(() => {
+    if (loading) {
+      setThinkingStage("searching");
+      thinkingTimerRef.current = setTimeout(() => {
+        setThinkingStage("generating");
+      }, 2000);
+    } else {
+      if (thinkingTimerRef.current) {
+        clearTimeout(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+    };
+  }, [loading]);
 
   async function ask(q: string) {
     const trimmed = q.trim();
     if (!trimmed || loading) return;
 
-    // Capture prior context BEFORE appending the current question.
-    // This is what gets sent to the API as conversation history.
+    // Handle greetings client-side — no token spend
+    if (GREETING_RE.test(trimmed)) {
+      appendChatMessage({ role: "user", content: trimmed });
+      const withAssistant = appendChatMessage({
+        role: "assistant",
+        content: GREETING_REPLY,
+      });
+      setMessages(withAssistant);
+      setSources([]);
+      setError("");
+      setUsedFallback(false);
+      setQuestion("");
+      return;
+    }
+
     const priorHistory = loadChatMemory();
 
     setLoading(true);
@@ -54,7 +108,6 @@ export default function Home() {
     setQuestion("");
     setSources([]);
 
-    // Optimistically add the user message to state and localStorage
     const withUser = appendChatMessage({ role: "user", content: trimmed });
     setMessages(withUser);
 
@@ -72,7 +125,6 @@ export default function Home() {
         return;
       }
 
-      // Add the assistant reply to state and localStorage
       const withAssistant = appendChatMessage({
         role: "assistant",
         content: data.answer ?? "",
@@ -81,7 +133,9 @@ export default function Home() {
       setSources(data.sources ?? []);
       setUsedFallback(data.usedFallback ?? false);
     } catch {
-      setError("Could not reach the server. Please check your connection and try again.");
+      setError(
+        "Could not reach the server. Please check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -106,16 +160,24 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-slate-800 text-white px-4 py-6">
-        <div className="max-w-3xl mx-auto flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">
-              Cho Lab Research Assistant
-            </h1>
-            <p className="mt-1 text-slate-300 text-sm leading-relaxed">
-              Ask questions based on Cho Lab research papers. Answers are
-              generated only from retrieved paper excerpts and include sources.
-            </p>
+      <header className="bg-slate-800 text-white px-4 py-5">
+        <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Image
+              src={AVATAR}
+              alt="Minny avatar"
+              width={40}
+              height={40}
+              className="rounded-full ring-2 ring-slate-600 shrink-0"
+            />
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight leading-tight">
+                Minny — Cho Lab Research Assistant
+              </h1>
+              <p className="mt-0.5 text-slate-300 text-sm leading-relaxed">
+                Answers from Cho Lab papers only · Texas State University
+              </p>
+            </div>
           </div>
           {hasMessages && (
             <button
@@ -129,34 +191,42 @@ export default function Home() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Notice — shown only when there is no conversation yet */}
-        {!hasMessages && (
-          <p className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5">
-            This assistant answers only from indexed Cho Lab papers. Questions
-            outside the database will be politely declined.
-          </p>
-        )}
-
-        {/* Example chips — shown only when there is no conversation yet */}
-        {!hasMessages && (
-          <div>
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2.5">
-              Try an example
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {EXAMPLE_QUESTIONS.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleExample(q)}
-                  disabled={loading}
-                  className="text-xs bg-white border border-slate-300 text-slate-600 rounded-full px-3 py-1.5 hover:border-slate-400 hover:bg-slate-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {q}
-                </button>
-              ))}
+        {/* Minny's greeting — always shown, not stored in memory */}
+        <div className="flex items-start gap-3">
+          <Image
+            src={AVATAR}
+            alt="Minny"
+            width={32}
+            height={32}
+            className="rounded-full ring-1 ring-slate-200 shrink-0 mt-0.5"
+          />
+          <div className="space-y-3 flex-1">
+            <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm prose prose-sm prose-slate max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{INITIAL_GREETING}</ReactMarkdown>
             </div>
+
+            {/* Example chips — shown only when no conversation */}
+            {!hasMessages && (
+              <div>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+                  Try an example
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {EXAMPLE_QUESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => handleExample(q)}
+                      disabled={loading}
+                      className="text-xs bg-white border border-slate-300 text-slate-600 rounded-full px-3 py-1.5 hover:border-slate-400 hover:bg-slate-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Conversation thread */}
         {hasMessages && (
@@ -169,23 +239,31 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <div key={i} className="flex justify-start">
-                  <div className="max-w-[85%] bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-slate-800 leading-relaxed shadow-sm whitespace-pre-wrap">
-                    {msg.content}
+                <div key={i} className="flex items-start gap-3">
+                  <Image
+                    src={AVATAR}
+                    alt="Minny"
+                    width={32}
+                    height={32}
+                    className="rounded-full ring-1 ring-slate-200 shrink-0 mt-0.5"
+                  />
+                  <div className="max-w-[85%] bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm prose prose-sm prose-slate max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   </div>
                 </div>
-              )
+              ),
             )}
 
             {/* Sources for the most recent answer */}
             {sources.length > 0 && !loading && (
-              <div className="pl-0">
+              <div className="pl-11">
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
                   Sources ({sources.length})
                 </p>
                 {usedFallback && (
                   <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3">
-                    Note: AI answer service was unavailable. Showing relevant sources below.
+                    Note: AI answer service was unavailable. Showing relevant
+                    sources below.
                   </p>
                 )}
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -200,11 +278,24 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading */}
+        {/* Thinking indicator */}
         {loading && (
-          <div className="flex items-center gap-2 text-slate-400 text-sm pl-1">
-            <LoadingDots />
-            <span>Searching papers and generating answer…</span>
+          <div className="flex items-center gap-3">
+            <Image
+              src={AVATAR}
+              alt="Minny"
+              width={32}
+              height={32}
+              className="rounded-full ring-1 ring-slate-200 shrink-0"
+            />
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+              <LoadingDots />
+              <span className="text-sm text-slate-400">
+                {thinkingStage === "searching"
+                  ? "Searching papers…"
+                  : "Generating answer…"}
+              </span>
+            </div>
           </div>
         )}
 

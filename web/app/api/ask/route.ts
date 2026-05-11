@@ -13,6 +13,18 @@ const MAX_HISTORY_MSG_LENGTH = 1500; // per-message safety cap
 const MATCH_COUNT = parseInt(process.env.MATCH_COUNT ?? "6", 10);
 const MATCH_THRESHOLD = parseFloat(process.env.MATCH_THRESHOLD ?? "0.35");
 
+const LOW_QUALITY_ANSWER =
+  "Hi! I'm Minny, the Cho Lab research assistant. I can answer questions about research papers " +
+  "published by the Cho Lab at Texas State University. Feel free to ask about snowpack, snowmelt, " +
+  "runoff, satellite retrievals, or any other topic covered in our publications!";
+
+function isLowQualityQuery(q: string): boolean {
+  if (q.length < 3) return true;
+  if (/^(.)\1+$/u.test(q)) return true; // single repeated character
+  if (/^[\d\s\W]+$/u.test(q)) return true; // only digits/punctuation/whitespace
+  return false;
+}
+
 const NO_SOURCES_ANSWER =
   "Sorry, I can only answer based on the Cho Lab paper database. " +
   "I could not find enough evidence in the available papers to answer your question.";
@@ -107,6 +119,14 @@ export async function POST(req: NextRequest) {
       { error: `Question too long. Max ${MAX_QUESTION_LENGTH} characters.` },
       { status: 400 }
     );
+  }
+
+  if (isLowQualityQuery(question)) {
+    return NextResponse.json<AskResponse>({
+      answer: LOW_QUALITY_ANSWER,
+      sources: [],
+      usedFallback: false,
+    });
   }
 
   // ── Step 1: Embed the retrieval query ──────────────────────────────────────
