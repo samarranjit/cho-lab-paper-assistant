@@ -33,11 +33,13 @@ const GREETING_REPLY =
   "What would you like to know?";
 
 const EXAMPLE_QUESTIONS = [
-  "What are the five snow seasonality classes?",
-  "What problem does the infrastructure design snowmelt paper try to solve?",
-  "What is runoff potential, and how is it different from snowmelt?",
-  "Why are forested areas challenging for satellite SWE retrievals?",
-  "How do snowmelt and rain-on-snow events affect infrastructure design?",
+  "What is soil moisture and why is it important for understanding how water and energy move between the Earth's surface and the atmosphere?",
+  "How might knowing whether soil is wet or dry help us predict when dust storms will occur in desert regions?",
+  "What is snow water equivalent (SWE) and why do scientists need accurate measurements of it?",
+  "What causes coastal flooding and how is it different from river flooding or storm surge?",
+  "What different types of snow exist, and how do meteorological conditions like temperature and wind affect snow properties?",
+  "Why would using multiple different computer models together give us better predictions of soil freeze/thaw cycles than using just one model?",
+  "How can satellite images from space help detect where subsurface drainage systems are located on farms?",
 ];
 
 type ThinkingStage = "searching" | "generating";
