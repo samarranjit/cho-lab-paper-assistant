@@ -14,7 +14,7 @@ const MATCH_COUNT = parseInt(process.env.MATCH_COUNT ?? "6", 10);
 const MATCH_THRESHOLD = parseFloat(process.env.MATCH_THRESHOLD ?? "0.35");
 
 const LOW_QUALITY_ANSWER =
-  "Hi! I'm Minny, the Cho Lab research assistant. I can answer questions about research papers " +
+  "Hi! I'm Miinu, the Cho Lab research assistant. I can answer questions about research papers " +
   "published by the Cho Lab at Texas State University. Feel free to ask about snowpack, snowmelt, " +
   "runoff, satellite retrievals, or any other topic covered in our publications!";
 

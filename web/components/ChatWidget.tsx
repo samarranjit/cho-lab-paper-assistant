@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ChatWidget — Minny, the Cho Lab Research Assistant
+ * ChatWidget — Miinu, the Cho Lab Research Assistant
  *
  * Self-contained floating chat widget.
  * Drop <ChatWidget /> into any page to embed the assistant.
@@ -15,7 +15,11 @@ import remarkGfm from "remark-gfm";
 import { useEffect, useRef, useState } from "react";
 import SourceCard from "./SourceCard";
 import LoadingDots from "./LoadingDots";
-import { appendChatMessage, clearChatMemory, loadChatMemory } from "@/lib/chatMemory";
+import {
+  appendChatMessage,
+  clearChatMemory,
+  loadChatMemory,
+} from "@/lib/chatMemory";
 import type { AskResponse, ChatMessage, Source } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +29,7 @@ const AVATAR = "/images/avatar.png";
 const BRAND = "#007C92";
 
 const INITIAL_GREETING =
-  "Hi! I'm Minny, the Cho Lab research assistant at Texas State University. " +
+  "Hi! I'm Miinu, the Cho Lab research assistant at Texas State University. " +
   "I've read all the papers published by the Cho Lab and I'm here to help you explore our research.\n\n" +
   "Ask me anything about snowpack, snowmelt, runoff, satellite retrievals, or other topics covered in our publications. " +
   "I'll answer using only what the papers say.\n\n" +
@@ -35,7 +39,7 @@ const GREETING_RE =
   /^(hi+|hello+|hey+|howdy|sup|what'?s\s*up|how\s+are\s+(you|u)|good\s+(morning|afternoon|evening)|greetings|yo+|hiya|helo|hii+|heyyy*)[.!?,\s]*$/i;
 
 const GREETING_REPLY =
-  "Hi there! I'm Minny, the Cho Lab research assistant. " +
+  "Hi there! I'm Miinu, the Cho Lab research assistant. " +
   "I can answer questions about research papers published by the Cho Lab at Texas State University — " +
   "topics like snowpack, satellite soil moisture, freeze/thaw cycles, and more.\n\nWhat would you like to know?";
 
@@ -53,7 +57,16 @@ const EXAMPLE_QUESTIONS = [
 
 function IconX() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -62,7 +75,16 @@ function IconX() {
 
 function IconChevronDown() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="6 9 12 15 18 9" />
     </svg>
   );
@@ -70,7 +92,16 @@ function IconChevronDown() {
 
 function IconExpand() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="15 3 21 3 21 9" />
       <polyline points="9 21 3 21 3 15" />
       <line x1="21" y1="3" x2="14" y2="10" />
@@ -81,7 +112,16 @@ function IconExpand() {
 
 function IconShrink() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="4 14 10 14 10 20" />
       <polyline points="20 10 14 10 14 4" />
       <line x1="10" y1="14" x2="3" y2="21" />
@@ -92,7 +132,16 @@ function IconShrink() {
 
 function IconRotate() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="1 4 1 10 7 10" />
       <path d="M3.51 15a9 9 0 1 0 .49-4" />
     </svg>
@@ -101,7 +150,16 @@ function IconRotate() {
 
 function IconSend() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <line x1="22" y1="2" x2="11" y2="13" />
       <polygon points="22 2 15 22 11 13 2 9 22 2" />
     </svg>
@@ -114,12 +172,12 @@ type ThinkingStage = "searching" | "generating";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function MinnyBubble({ content }: { content: string }) {
+function MiinuBubble({ content }: { content: string }) {
   return (
     <div className="flex items-start gap-2.5">
       <Image
         src={AVATAR}
-        alt="Minny"
+        alt="Miinu"
         width={28}
         height={28}
         className="rounded-full shrink-0 mt-0.5 ring-1 ring-slate-200 shadow-sm"
@@ -149,7 +207,7 @@ function ThinkingBubble({ stage }: { stage: ThinkingStage }) {
     <div className="flex items-center gap-2.5">
       <Image
         src={AVATAR}
-        alt="Minny"
+        alt="Miinu"
         width={28}
         height={28}
         className="rounded-full shrink-0 ring-1 ring-slate-200 shadow-sm"
@@ -176,7 +234,8 @@ export default function ChatWidget() {
   const [question, setQuestion] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(false);
-  const [thinkingStage, setThinkingStage] = useState<ThinkingStage>("searching");
+  const [thinkingStage, setThinkingStage] =
+    useState<ThinkingStage>("searching");
   const [error, setError] = useState("");
   const [usedFallback, setUsedFallback] = useState(false);
 
@@ -207,7 +266,10 @@ export default function ChatWidget() {
   useEffect(() => {
     if (loading) {
       setThinkingStage("searching");
-      thinkingTimerRef.current = setTimeout(() => setThinkingStage("generating"), 2000);
+      thinkingTimerRef.current = setTimeout(
+        () => setThinkingStage("generating"),
+        2000,
+      );
     } else {
       if (thinkingTimerRef.current) {
         clearTimeout(thinkingTimerRef.current);
@@ -237,7 +299,10 @@ export default function ChatWidget() {
     // Client-side greeting — zero API cost
     if (GREETING_RE.test(trimmed)) {
       appendChatMessage({ role: "user", content: trimmed });
-      const updated = appendChatMessage({ role: "assistant", content: GREETING_REPLY });
+      const updated = appendChatMessage({
+        role: "assistant",
+        content: GREETING_REPLY,
+      });
       setMessages(updated);
       setSources([]);
       setError("");
@@ -326,7 +391,7 @@ export default function ChatWidget() {
       {/* ── Chat panel ──────────────────────────────────────────────────────── */}
       <div
         role="dialog"
-        aria-label="Minny — Cho Lab Research Assistant"
+        aria-label="Miinu — Cho Lab Research Assistant"
         aria-hidden={!isOpen}
         className={cn(
           "fixed z-50 flex flex-col bg-white border border-slate-200 shadow-2xl",
@@ -351,13 +416,15 @@ export default function ChatWidget() {
         >
           <Image
             src={AVATAR}
-            alt="Minny"
+            alt="Miinu"
             width={34}
             height={34}
             className="rounded-full ring-2 ring-white/25 shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-white font-semibold text-sm leading-tight">Minny</p>
+            <p className="text-white font-semibold text-sm leading-tight">
+              Miinu
+            </p>
             <p className="text-white/65 text-[11px] leading-tight truncate">
               Cho Lab · Texas State University
             </p>
@@ -394,7 +461,7 @@ export default function ChatWidget() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-4 py-4 space-y-3 chat-scroll"
         >
-          <MinnyBubble content={INITIAL_GREETING} />
+          <MiinuBubble content={INITIAL_GREETING} />
 
           {!hasMessages && (
             <div className="pl-9 flex flex-wrap gap-1.5 pt-0.5">
@@ -415,7 +482,7 @@ export default function ChatWidget() {
             msg.role === "user" ? (
               <UserBubble key={i} content={msg.content} />
             ) : (
-              <MinnyBubble key={i} content={msg.content} />
+              <MiinuBubble key={i} content={msg.content} />
             ),
           )}
 
@@ -462,7 +529,11 @@ export default function ChatWidget() {
               disabled={loading}
               placeholder="Ask about Cho Lab research…"
               className="flex-1 resize-none bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none disabled:opacity-50 leading-relaxed"
-              style={{ minHeight: "24px", maxHeight: "120px", overflow: "hidden" }}
+              style={{
+                minHeight: "24px",
+                maxHeight: "120px",
+                overflow: "hidden",
+              }}
             />
             <button
               onClick={() => ask(question)}
@@ -483,7 +554,9 @@ export default function ChatWidget() {
       {/* ── Floating trigger button ──────────────────────────────────────────── */}
       <button
         onClick={toggleOpen}
-        aria-label={isOpen ? "Close chat" : "Chat with Minny — Cho Lab Research Assistant"}
+        aria-label={
+          isOpen ? "Close chat" : "Chat with Miinu — Cho Lab Research Assistant"
+        }
         className="fixed bottom-5 right-5 z-50 w-[58px] h-[58px] rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
         style={{ backgroundColor: BRAND }}
       >
@@ -494,7 +567,7 @@ export default function ChatWidget() {
         ) : (
           <Image
             src={AVATAR}
-            alt="Chat with Minny"
+            alt="Chat with Miinu"
             width={46}
             height={46}
             className="rounded-full"
